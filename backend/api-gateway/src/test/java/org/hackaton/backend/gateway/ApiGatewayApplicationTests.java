@@ -1,8 +1,13 @@
-package org.hackaton.backend.auth;
+package org.hackaton.backend.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AuthServiceApplicationTests {
+class ApiGatewayApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
 }

@@ -1,6 +1,3 @@
-CREATE DATABASE auth_db OWNER postgres;
-\c auth_db
-
 CREATE TABLE users (
                        id UUID PRIMARY KEY,
                        fio VARCHAR(255) NOT NULL,

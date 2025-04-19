@@ -5,9 +5,6 @@ plugins {
 	id("org.flywaydb.flyway") version "11.7.2"
 }
 
-group = "org.hackaton.backend"
-version = "0.0.1-SNAPSHOT"
-
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
@@ -27,7 +24,8 @@ dependencies {
 
 	// Database
 	runtimeOnly("org.postgresql:postgresql")
-	implementation("org.flywaydb:flyway-core:10.7.2")
+	implementation("org.flywaydb:flyway-core")
+	implementation("org.flywaydb:flyway-database-postgresql")
 
 	// JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
@@ -53,4 +51,8 @@ flyway {
 	url = "jdbc:postgresql://localhost:5432/auth_db"
 	user = "postgres"
 	password = "postgres"
+}
+
+tasks.jar {
+	archiveFileName.set("app.jar")
 }

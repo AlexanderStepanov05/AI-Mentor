@@ -31,7 +31,6 @@ public class AuthService {
                 .email(request.email())
                 .fio(request.fio())
                 .password(passwordEncoder.encode(request.password()))
-                .enabled(true)
                 .build();
 
         userRepository.save(user);
