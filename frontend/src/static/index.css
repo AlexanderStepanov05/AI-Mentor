@@ -48,8 +48,8 @@
 
 :root {
     --dark-voilet: #160b25;
-    --light: #bfbfbf50;
-    --violet: #ffffff;
+    --light: hsla(0, 0%, 100%, 0.51);
+    --violet: #efeded3d;
     --light-blue: #e3e6fe;
     --accent: #0068ff;
     --dark-accent: #0e55bd;
@@ -160,6 +160,7 @@ input {
     border: none;
     border-radius: 16px;
     background-color: var(--violet);
+    backdrop-filter: blur(10px);
     padding: 8px;
     color: rgb(0, 0, 0);
     font-weight: 400;

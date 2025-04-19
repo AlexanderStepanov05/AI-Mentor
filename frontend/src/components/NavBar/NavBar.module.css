@@ -1,24 +1,25 @@
 .nav-bar {
     z-index: 999;
     width: fit-content;
-    background-color: rgba(31, 31, 31, 0.1);
     border: 2px solid var(--light);
     backdrop-filter: saturate(180%) blur(20px);
     border-radius: 30px;
+    border: 1px solid black;
     position: fixed;
     margin: 0 auto;
-    bottom: 30px;
-    right: 0;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
     padding: 20px;
-    left: 0;
-    overflow: hidden; /* Добавлено для корректного отображения псевдоэлемента */
+    overflow: hidden;
 }
 
 .nav-bar ul {
     display: flex;
     gap: 20px;
     align-items: center;
-    position: relative; /* Для позиционирования псевдоэлемента */
+    position: relative;
+    flex-direction: column;
 }
 
 .nav-bar li {
@@ -72,18 +73,11 @@
     transform: scale(1.1);
 }
 
-body {
-    padding-bottom: 150px;
-}
 
 @media (max-width: 800px) {
     .nav-bar {
         padding: 15px;
         border-radius: 20px;
-    }
-
-    body {
-        padding-bottom: 110px;
     }
 
     .nav-bar li {
@@ -97,18 +91,19 @@ body {
     }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 450px) { 
     .nav-bar {
-        bottom: 0;
-        border-radius: 20px 20px 0 0;
-        width: 100%;
+        padding: 10px;
+        border-radius: 20px;
     }
 
-    body {
-        padding-bottom: 80px;
+    .nav-bar li {
+        width: 30px;
+        height: 30px;
+        border-radius: 13px;
     }
-
-    .nav-bar ul {
-        justify-content: center;
+    
+    .nav-bar li::before {
+        border-radius: 13px;
     }
 }
