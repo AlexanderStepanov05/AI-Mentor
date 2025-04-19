@@ -1,0 +1,183 @@
+@font-face {
+    font-family: "Stolzl";
+    src: url(/fonts/Stolzl/stolzl_regular.otf);
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Stolzl";
+    src: url(/fonts/Stolzl/stolzl_medium.otf);
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Stolzl";
+    src: url(/fonts/Stolzl/stolzl_bold.otf);
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: "Stinger";
+    src: url(/fonts/StingerWide/StingerWide-Regular.woff);
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Stinger";
+    src: url(/fonts/StingerWide/StingerWide-Bold.woff2);
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: "Stinger";
+    src: url(/fonts/StingerWide/StingerWide-Heavy.woff2);
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: "SFDisplay";
+    src: url(../../public/fonts/SFPro/sf-pro-display_regular.woff2);
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "SFDisplay";
+    src: url(../../public/fonts/SFPro/sf-pro-display_bold.woff2);
+    font-weight: 900;
+}
+
+:root {
+    --dark-voilet: #160b25;
+    --light: #bfbfbf50;
+    --violet: #ffffff;
+    --light-blue: #e3e6fe;
+    --accent: #0068ff;
+    --dark-accent: #0e55bd;
+    --light-green: #d5f1ea;
+    --light-brown: #bd8d5d;
+    --dark-green: #03957b;
+    --magenta: #ee0177;
+    --dark-magenta: #30242a;
+    --orange: #ea951b;
+    --dark-orange: #2b2721;
+    --green: #02bc9a;
+    --mega-dark-green: #052d25;
+    --background: #ffffff;
+    --black-font: #080d10;
+    --dark-blue: #272a35;
+}
+
+:root::-webkit-scrollbar{
+    width: 10px;
+    background-color: var(--background);
+}
+
+:root::-webkit-scrollbar-thumb{
+    background-color: var(--dark-blue);
+    border-radius: 4px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+ul{
+    list-style: none;
+}
+
+body {
+    background-color: var(--background);
+    min-height: 100vh;
+    font-family: "Stolzl", sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    border-radius: 16px;
+    margin: 16px 0px;
+    padding: 16px;
+    background-color: var(--accent);
+    color: white;
+    font-family: "Stolzl";
+    font-weight: 400;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background-color: #005be4;
+}
+
+button:active {
+    background-color: var(--dark-accent);
+}
+
+button.active {
+    background-color: var(--accent);
+}
+
+button:disabled{
+    background-color: #0e55bd;
+    cursor: default;
+}
+
+.green-button{
+	background-color: var(--green);
+}
+
+.green-button:hover{
+	background-color: var(--dark-green)
+}
+
+.green-button:active{
+	background-color: #0c7a66;
+}
+.magenta-button{
+	background-color: var(--magenta);
+}
+
+.magenta-button:hover{
+	background-color: #b1095d;
+}
+
+.magenta-button:active{
+	background-color: #7e0d45;
+}
+
+input {
+    height: 48px;
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    background-color: var(--violet);
+    padding: 8px;
+    color: rgb(0, 0, 0);
+    font-weight: 400;
+    font-family: "Stolzl";
+    font-size: 16px;
+    margin-bottom: 8px;
+    outline: none;
+    transition: 300ms;
+    border: 2px solid var(--violet);
+}
+
+input::placeholder {
+    color: rgb(111, 111, 111);
+    font-family: "Stolzl";
+    font-weight: 400;
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: var(--accent);
+}
