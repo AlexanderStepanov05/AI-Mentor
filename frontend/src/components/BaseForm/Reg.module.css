@@ -27,6 +27,7 @@
     padding: 24px;
     border-radius: 32px;
     margin: 16px;
+    border: 1px solid black;
 }
 
 .link {
