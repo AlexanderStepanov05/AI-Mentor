@@ -4,9 +4,6 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "org.hackaton.backend"
-version = "0.0.1-SNAPSHOT"
-
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
@@ -45,4 +42,8 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.jar {
+	archiveFileName.set("app.jar")
 }
