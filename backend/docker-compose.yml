@@ -48,6 +48,28 @@ services:
     depends_on:
       - mongo
 
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CLOUD_GATEWAY_ROUTES_AUTH-SERVICE_URL=http://auth-service:8080
+      - SPRING_CLOUD_GATEWAY_ROUTES_DIALOGUE-SERVICE_URL=http://dialogue-service:8081
+      - SPRING_CLOUD_GATEWAY_ROUTES_ML-SERVICE_URL=http://ml-service:8083
+      - JWT_SECRET=your-256-bit-secret-key-here-must-be-secure
+      - JWT_EXPIRATION=3600
+    depends_on:
+      - auth-service
+      - dialogue-service
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
+
 volumes:
   postgres_data:
   mongo_data:

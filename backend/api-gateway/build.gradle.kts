@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.4.4"
+	id("org.springframework.boot") version "3.3.4"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -32,6 +32,10 @@ dependencies {
 
 	// Тесты
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// Utils
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
 }
 
 dependencyManagement {
@@ -40,10 +44,7 @@ dependencyManagement {
 	}
 }
 
-tasks.jar {
-	archiveFileName.set("app.jar")
-}
-
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
