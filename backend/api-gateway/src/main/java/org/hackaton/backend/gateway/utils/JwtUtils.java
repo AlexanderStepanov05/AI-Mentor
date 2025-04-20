@@ -1,24 +1,23 @@
 package org.hackaton.backend.gateway.utils;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final String jwtSecret;
 
-    @Value("${jwt.expiration}")
-    private Duration expiration;
+    public JwtUtils(@Value("${jwt.secret}") String jwtSecret) {
+        this.jwtSecret = jwtSecret;
+    }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .setSigningKey(secret)
+                    .setSigningKey(jwtSecret)
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -27,12 +26,12 @@ public class JwtUtils {
         }
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
+    public String extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtSecret)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+        return claims.getSubject();
     }
 }

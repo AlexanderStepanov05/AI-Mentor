@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-mentor-network
 
   mongo:
     image: mongo
@@ -22,11 +24,13 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - ai-mentor-network
 
   # Сервисы
   auth-service:
     build:
-      context: ./auth-service
+      context: ./backend/auth-service
       dockerfile: Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
@@ -36,10 +40,12 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+    networks:
+      - ai-mentor-network
 
   dialogue-service:
     build:
-      context: ./dialogue-service
+      context: ./backend/dialogue-service
       dockerfile: Dockerfile
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://admin:secret@mongo:27017/dialogue_db?authSource=admin
@@ -47,10 +53,12 @@ services:
       - "8081:8081"
     depends_on:
       - mongo
+    networks:
+      - ai-mentor-network
 
   api-gateway:
     build:
-      context: ./api-gateway
+      context: ./backend/api-gateway
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
@@ -64,10 +72,21 @@ services:
       - auth-service
       - dialogue-service
     networks:
-      - backend-network
+      - ai-mentor-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - ai-mentor-network
 
 networks:
-  backend-network:
+  ai-mentor-network:
     driver: bridge
 
 volumes:

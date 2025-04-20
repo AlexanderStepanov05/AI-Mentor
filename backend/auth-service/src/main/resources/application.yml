@@ -19,3 +19,8 @@ spring:
 jwt:
   secret: your-256-bit-secret-key-here-must-be-secure
   expiration: 1h
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.web: DEBUG
