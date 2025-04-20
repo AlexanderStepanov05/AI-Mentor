@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import {LOGOUT} from "../../actions/types.jsx";
 import style from "./MainChat.module.css";
 import rightArrow from "../../assets/rightArrow.svg";
 import axios from "axios";
 import Loader from "../Loader/Loader";
+
 
 export const MainChat = () => {
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const textareaRef = useRef(null);
     const [answers, setAnswers] = useState([]);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -18,6 +22,8 @@ export const MainChat = () => {
             textareaRef.current.style.overflowY = newHeight > 400 ? 'auto' : 'hidden';
         }
     }, [message]);
+
+    
     const handleChange = (e) => {
         setMessage(e.target.value);
     };
@@ -30,11 +36,12 @@ export const MainChat = () => {
         const formData = new FormData();
         formData.append('chat', message);
         setMessage('');
-        
+        setAnswers(prev => [...prev, {
+            my: message,
+        }])
         const config = {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "", 
             }
         };
 
@@ -43,14 +50,15 @@ export const MainChat = () => {
                 return axios.get("", config);
             })
             .then((response) => {
-                setAnswers(prev => [...prev, { 
+                setAnswers(prev => [...prev.slice(0, -1), { 
                     my: message, 
                     ai: response.data 
                 }]);
             })
             .catch((err) => {
-                setAnswers(prev => [...prev, { 
+                setAnswers(prev => [...prev.slice(0, -1), { 
                     my: message, 
+                    ai: "Произошла ошибка"
                 }]);
                 console.error(err);
             })
@@ -60,14 +68,21 @@ export const MainChat = () => {
     };
     return (
         <section className={style["chat"]}>
-            <div className={style["content"]}>
+            <button
+            className={style["logout"]}
+                style={{ backgroundColor: "var(--magenta)", marginLeft: "40px" }}
+                onClick={() => {dispatch({ type: LOGOUT })}}
+            >Выйти
+            </button>
+            
+            <div className={style["content"]} id="content">
                 {answers.map((item, index) => (
                     <div key={index}>
                         <div className={style["my"]}>
                             <div className={style["message"]}><p>{item?.my}</p></div> 
                         </div>
                         <div className={style["ai"]}>
-                            <div className={style["message"]}><p>{item.ia ? item?.ai : "Произошла ошибка"}</p></div>
+                            <div className={style["message"]}><p>{item.ai ? item.ai : (loading ? <Loader /> : item.ai)}</p></div>
                         </div>
                     </div>
                 ))}
@@ -88,7 +103,7 @@ export const MainChat = () => {
                         onClick={handleSubmit}
                         disabled={loading || !message.trim()}
                     >
-                        {loading ? <Loader /> : <img src={rightArrow} alt="Отправить" />}
+                        <img src={rightArrow} alt="Отправить" />
                     </button>
                 </div>
             </div>

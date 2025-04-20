@@ -74,7 +74,7 @@
 }
 
 
-@media (max-width: 800px) {
+@media (max-width: 950px) {
     .nav-bar {
         padding: 15px;
         border-radius: 20px;
@@ -95,6 +95,8 @@
     .nav-bar {
         padding: 10px;
         border-radius: 20px;
+
+
     }
 
     .nav-bar li {
@@ -106,4 +108,5 @@
     .nav-bar li::before {
         border-radius: 13px;
     }
+    
 }

@@ -16,60 +16,57 @@ export const MainPage = ({isAuthenticated}) => {
 
     const onChange = e => setData({...Data, [e.target.name]: e.target.value});
 
-    const onSubmit = e => {
+    const onSubmit = async e => {
         e.preventDefault();
         if (Data.fio.trim() !== '' && Data.email.trim() !== '' && Data.password.trim() !== '') {
             setInCorrectValue(false);
-            const formData = {};
-            formData.fio = Data.fio;
-            formData.email = Data.email;
-            formData.password = Data.password;
-            axios
-                .post(`http://localhost:8082/api/auth/register`, formData)
-                .then(() => {
-                    const body = {};
-                    body.email = Data.email;
-                    body.password = Data.password;
-                    axios
-                        .post(`http://localhost:8082/api/auth/login`, body)
-                        .then(res => {
-                            dispatch({
-                                type: LOGIN_SUCCESS,
-                                payload: res.data,
-                            });
-                            const config = {
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    Authorization: `Bearer ${localStorage.getItem("JWTToken")}`,
-                                },
-                            };
-                            const formData = {};
-                            formData.tg = Data.tg;
-                            axios
-                                .patch(`${domain}/editabout`, formData, config)
-                                .catch(err => {
-                                    setErr(err.response.data.text);
-                                });
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            setErr(err.response.data.text);
-                            dispatch({
-                                type: LOGIN_FAIL,
-                            });
-                        });
-                })
-                .catch(err => {
-                    setErr(err.response.data.text);
+            const formData = {
+                fio: Data.fio,
+                email: Data.email,
+                password: Data.password
+            };
+            
+            const config = {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "", 
+                }
+            };
+
+            try {
+                // Регистрация
+                await axios.post(`http://localhost:8080/api/auth/register`, formData, config);
+                
+                // Логин после успешной регистрации
+                const loginBody = {
+                    email: Data.email,
+                    password: Data.password
+                };
+                
+                const loginResponse = await axios.post(`http://localhost:8080/api/auth/login`, loginBody, config);
+                
+                dispatch({
+                    type: LOGIN_SUCCESS,
+                    payload: loginResponse.data,
                 });
-        } else{
+            } catch (error) {
+                const errorMessage = error.response?.data?.text || 
+                                   error.message || 
+                                   "Произошла ошибка";
+                setErr(errorMessage);
+                
+                if (error.response?.status === 401) {
+                    dispatch({
+                        type: LOGIN_FAIL,
+                    });
+                }
+            }
+        } else {
             setInCorrectValue(true);
         }
     };
 
-    // if (isAuthenticated) {
-    //     return <Navigate to="/main"/>;
-    // }
     return (
         <BaseForm 
             onSubmit={onSubmit}
