@@ -25,34 +25,35 @@ export const MainPage = ({isAuthenticated}) => {
                 email: Data.email,
                 password: Data.password
             };
-            
+
             const config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "", 
+                    "Authorization": "",
                 }
             };
 
             try {
-                await axios.post(`http://localhost:8080/api/auth/register`, formData, config);
-                
+                // Регистрация
+                await axios.post(`http://localhost:8082/api/auth/register`, formData, config);
+                // Логин после успешной регистрации
                 const loginBody = {
                     email: Data.email,
                     password: Data.password
                 };
-                
-                const loginResponse = await axios.post(`http://localhost:8080/api/auth/login`, loginBody, config);
-                
+
+                const loginResponse = await axios.post(`http://localhost:8082/api/auth/login`, loginBody, config);
+
                 dispatch({
                     type: LOGIN_SUCCESS,
                     payload: loginResponse.data,
                 });
             } catch (error) {
-                const errorMessage = error.response?.data?.text || 
-                                   error.message || 
-                                   "Произошла ошибка";
+                const errorMessage = error.response?.data?.text
+                error.message
+                "Произошла ошибка";
                 setErr(errorMessage);
-                
+
                 if (error.response?.status === 401) {
                     dispatch({
                         type: LOGIN_FAIL,
@@ -63,9 +64,11 @@ export const MainPage = ({isAuthenticated}) => {
             setInCorrectValue(true);
         }
     };
-
+    if (isAuthenticated) {
+        return <Navigate to="/main" />;
+    }
     return (
-        <BaseForm 
+        <BaseForm
             onSubmit={onSubmit}
             onChange={onChange}
             error={err}
