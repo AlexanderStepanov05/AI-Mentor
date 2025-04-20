@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-Бот для ответов на вопросы о расписании и курсах с использованием Mistral AI API.
+Минимальная версия бота для ответов на вопросы о расписании и курсах с использованием Mistral AI API.
 Бот обогащает запрос пользователя контекстом из файлов с расписанием и описаниями курсов.
 """
 
-import os
 import csv
 import json
 import argparse
@@ -15,7 +14,6 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import ssl
-import json
 
 # API-ключ Mistral AI
 MISTRAL_API_KEY = "5on1LpVk7OysL7d3jWhtzqKwjkqFwr69"
@@ -56,7 +54,6 @@ def load_csv_data(file_path: str) -> List[Dict[str, str]]:
                 # Очищаем значения от специальных символов
                 cleaned_row = {k: clean_text(v) for k, v in row.items()}
                 data.append(cleaned_row)
-        print(f"Загружено {len(data)} строк из файла {file_path}")
         return data
     except Exception as e:
         print(f"Ошибка при загрузке CSV-файла: {e}")
@@ -75,8 +72,8 @@ def clean_text(text: str) -> str:
     if not isinstance(text, str):
         return str(text)
     
-    # Заменяем специальные символы
-    text = text.replace("*", "").replace("#", "")
+    # Заменяем специальные символы и маркдаун форматирование
+    text = text.replace("*", "").replace("#", "").replace("**", "")
     # Удаляем лишние пробелы
     text = re.sub(r'\s+', ' ', text).strip()
     return text
@@ -94,7 +91,6 @@ def load_text_data(file_path: str) -> str:
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        print(f"Загружен файл {file_path}")
         return content
     except Exception as e:
         print(f"Ошибка при загрузке текстового файла: {e}")
@@ -125,9 +121,14 @@ def format_schedule_to_text(csv_data: List[Dict[str, str]]) -> str:
         if time:
             text += f"{time}:\n"
         
+        has_classes = False
         for direction in ["Север", "Юг", "Запад", "Восток"]:
             if direction in row and row[direction]:
-                text += f"- {direction}: {row[direction]}\n"
+                text += f"{direction}: {row[direction]}\n"
+                has_classes = True
+        
+        if not has_classes:
+            text += "Пар нет\n"
         
         text += "\n"
     
@@ -301,6 +302,30 @@ def create_prompt(query: str, schedule_data: List[Dict[str, str]],
     
     return prompt
 
+def clean_markdown(text: str) -> str:
+    """
+    Очищает текст от markdown-форматирования.
+    
+    Args:
+        text: Исходный текст с markdown
+        
+    Returns:
+        str: Очищенный текст
+    """
+    # Убираем bold (**текст**)
+    text = text.replace("**", "")
+    # Убираем italic (*текст*)
+    text = text.replace("*", "")
+    # Заменяем маркеры списка на простой текст
+    text = re.sub(r'^\s*-\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*\*\s+', '', text, flags=re.MULTILINE)
+    text = text.replace("•", "")
+    # Удаляем заголовки в формате markdown (#, ##, ###)
+    text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
+    # Заменяем "None" на "пар нет"
+    text = re.sub(r'\bNone\b', 'пар нет', text)
+    return text
+
 def call_mistral_api(prompt: str, max_tokens: int = 1024, 
                     temperature: float = 0.7) -> str:
     """
@@ -340,7 +365,10 @@ def call_mistral_api(prompt: str, max_tokens: int = 1024,
         # Отправляем запрос и получаем ответ
         with urllib.request.urlopen(req, context=context) as response:
             result = json.loads(response.read().decode('utf-8'))
-            return result["choices"][0]["message"]["content"]
+            response_text = result["choices"][0]["message"]["content"]
+            # Очищаем ответ от markdown-форматирования
+            response_text = clean_markdown(response_text)
+            return response_text
     except urllib.error.URLError as e:
         print(f"Ошибка при вызове API Mistral: {e}")
         return f"Произошла ошибка при обработке запроса: {str(e)}"
@@ -370,6 +398,40 @@ def add_follow_up(answer: str) -> str:
     
     return answer
 
+def save_chat_history(conversation_history: List[Dict[str, str]], filename: str = "chat_history.json") -> None:
+    """
+    Сохраняет историю чата в JSON-файл.
+    
+    Args:
+        conversation_history: История диалога
+        filename: Имя файла для сохранения
+    """
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(conversation_history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Ошибка при сохранении истории чата: {e}")
+
+def load_chat_history(filename: str = "chat_history.json") -> List[Dict[str, str]]:
+    """
+    Загружает историю чата из JSON-файла.
+    
+    Args:
+        filename: Имя файла для загрузки
+        
+    Returns:
+        List[Dict]: История диалога
+    """
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            conversation_history = json.load(f)
+        return conversation_history
+    except FileNotFoundError:
+        return []
+    except Exception as e:
+        print(f"Ошибка при загрузке истории чата: {e}")
+        return []
+
 def main():
     """Основная функция для запуска бота."""
     parser = argparse.ArgumentParser(description="Образовательный бот для ответов на вопросы о расписании и курсах")
@@ -394,6 +456,10 @@ def main():
     parser.add_argument("--university-data", type=str, default="data/CentralUniversityData.csv", 
                       help="Путь к CSV-файлу с дополнительными данными университета")
     
+    # Аргумент для сохранения и загрузки истории чата
+    parser.add_argument("--chat-history", type=str, default="chat_history.json",
+                      help="Путь к файлу для сохранения/загрузки истории чата")
+    
     args = parser.parse_args()
     
     # Загрузка данных о расписании
@@ -413,22 +479,22 @@ def main():
         print("Ошибка: Не удалось загрузить необходимые данные")
         return
     
-    print("\n🎓 Образовательный ассистент готов помочь вам! 🎓")
-    print("Введите 'выход' для завершения работы\n")
+    # Загрузка истории чата, если файл существует
+    conversation_history = load_chat_history(args.chat_history)
+    
     
     # Выбираем случайное приветствие
     greeting = random.choice(GREETINGS)
-    print(f"Ассистент: {greeting}\n")
-    
-    # История диалога
-    conversation_history = []
+    print(f"{greeting}\n")
     
     while True:
         # Получаем вопрос пользователя
-        query = input("Ваш вопрос: ")
+        query = input()
         
         if query.lower() in ["выход", "exit", "quit", "q"]:
-            print("\nАссистент: Было приятно помочь вам! Если у вас возникнут еще вопросы, обращайтесь. До свидания!")
+            # Сохраняем историю чата перед выходом
+            save_chat_history(conversation_history, args.chat_history)
+            print("\nБыло приятно помочь вам! Если у вас возникнут еще вопросы, обращайтесь. До свидания!")
             break
         
         # Добавляем вопрос в историю диалога
@@ -444,21 +510,26 @@ def main():
         )
         
         # Вызываем API Mistral
-        print("\nОбрабатываю запрос...")
         answer = call_mistral_api(prompt)
         
         # Проверяем, есть ли уточняющий вопрос в ответе, и добавляем его, если нет
         answer = add_follow_up(answer)
         
+        # Дополнительно очищаем ответ от остатков форматирования
+        answer = clean_markdown(answer)
+        
         # Добавляем ответ в историю диалога
-        conversation_history.append({"role": "assistant", "content": answer})
+        conversation_history.append({"role": "ai", "content": answer})
         
         # Ограничиваем размер истории диалога последними 6 сообщениями
         if len(conversation_history) > 6:
             conversation_history = conversation_history[-6:]
         
+        # Сохраняем историю чата после каждого обмена сообщениями
+        save_chat_history(conversation_history, args.chat_history)
+        
         # Выводим ответ
-        print(f"\nАссистент: {answer}\n")
+        print(f"\n{answer}\n")
 
 if __name__ == "__main__":
     main() 
