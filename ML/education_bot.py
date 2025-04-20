@@ -158,10 +158,81 @@ def format_handbook_to_text(csv_data: List[Dict[str, str]]) -> str:
     
     return text
 
+def format_university_data_to_text(csv_data: List[Dict[str, str]]) -> str:
+    """
+    Преобразует данные из CSV с дополнительной информацией университета в текстовый формат.
+    
+    Args:
+        csv_data: Список строк из CSV-файла с данными университета
+        
+    Returns:
+        str: Текстовое представление данных университета
+    """
+    text = "ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ УНИВЕРСИТЕТА:\n\n"
+    
+    current_section = None
+    
+    for row in csv_data:
+        # Проверяем все ключи в строке
+        for key in row:
+            if key and row[key]:
+                # Если это новый раздел (строка с заголовками категорий)
+                if key == "Subject" and row[key]:
+                    current_section = "ИНФОРМАЦИЯ О ПРЕДМЕТАХ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}: {row.get('Missed_KR_Colloquium_with_reason', '')} {row.get('Missed_KR_Colloquium_without_reason', '')} {row.get('Redo_HW', '')} {row.get('Redo_project', '')} {row.get('Seminars', '')}\n\n"
+                elif key == "Dormitory_payment" and row[key]:
+                    current_section = "ОПЛАТА ОБЩЕЖИТИЯ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}\n\n"
+                elif key == "Education_payment" and row[key]:
+                    current_section = "ОПЛАТА ОБУЧЕНИЯ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}\n\n"
+                elif key == "Exam" and row[key]:
+                    current_section = "ЭКЗАМЕНЫ И ЗАЧЕТЫ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"Экзамены: {row[key]}\n"
+                    text += f"Дифференцированные зачеты: {row.get('Differentiated_credit', '')}\n"
+                    text += f"Зачеты: {row.get('Credit', '')}\n\n"
+                elif key == "День" and row[key]:
+                    if current_section != "РАСПИСАНИЕ":
+                        current_section = "РАСПИСАНИЕ"
+                        text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]} {row.get('Время', '')}: {row.get('Север', '')} {row.get('Юг', '')} {row.get('Запад', '')} {row.get('Восток', '')}\n"
+                elif key == "Предмет" and row[key]:
+                    if current_section != "ИНФОРМАЦИЯ О КУРСАХ":
+                        current_section = "ИНФОРМАЦИЯ О КУРСАХ"
+                        text += f"\n==== {current_section} ====\n\n"
+                    text += f"Предмет: {row[key]}\n"
+                    for info_key in ["Академическая нагрузка", "Руководитель курса", "Фича курса", "Результат курса", "Система оценивания", "Система уровней", "О курсе"]:
+                        if info_key in row and row[info_key]:
+                            text += f"{info_key}: {row[info_key]}\n"
+                    text += "\n"
+                elif key == "AcademicProcessOrder" and row[key]:
+                    current_section = "ПРИКАЗЫ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}: {row.get('Content', '')}\n\n"
+                elif key == "DormitoryRules" and row[key]:
+                    current_section = "ПРАВИЛА ОБЩЕЖИТИЯ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}: {row.get('Content', '')}\n\n"
+                elif key == "DisciplinaryMeasures" and row[key]:
+                    current_section = "ДИСЦИПЛИНАРНЫЕ МЕРЫ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"{row[key]}: {row.get('Content', '')}\n\n"
+                elif key == "FrequentlyAskedQuestions" and row[key]:
+                    current_section = "ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ"
+                    text += f"\n==== {current_section} ====\n\n"
+                    text += f"Файл: {row.get('File', '')}, Вопрос: {row.get('Question', '')}\n\n"
+    
+    return text
+
 def create_prompt(query: str, schedule_data: List[Dict[str, str]], 
                  schedule_description: str, schedule_faq: str,
                  handbook_data: List[Dict[str, str]],
                  handbook_description: str, handbook_faq: str,
+                 university_data: List[Dict[str, str]] = None,
                  conversation_history: List[Dict[str, str]] = None) -> str:
     """
     Создает запрос для модели с контекстом расписания и справочника курсов.
@@ -174,6 +245,7 @@ def create_prompt(query: str, schedule_data: List[Dict[str, str]],
         handbook_data: Данные справочника курсов из CSV
         handbook_description: Описание структуры справочника
         handbook_faq: Часто задаваемые вопросы о курсах
+        university_data: Дополнительные данные университета
         conversation_history: История диалога
         
     Returns:
@@ -182,6 +254,9 @@ def create_prompt(query: str, schedule_data: List[Dict[str, str]],
     # Форматируем данные в текст
     schedule_text = format_schedule_to_text(schedule_data)
     handbook_text = format_handbook_to_text(handbook_data)
+    university_text = ""
+    if university_data:
+        university_text = format_university_data_to_text(university_data)
     
     # Формируем историю диалога
     conversation_text = ""
@@ -193,47 +268,36 @@ def create_prompt(query: str, schedule_data: List[Dict[str, str]],
             conversation_text += f"{role.capitalize()}: {content}\n"
         conversation_text += "\n"
     
-    # Создаем контекст
-    context = f"""Ты - дружелюбный образовательный ассистент по имени Эду, который помогает отвечать на вопросы о расписании занятий и содержании курсов. 
-Твоя задача - предоставлять точную информацию в человечной и доброжелательной манере. 
+    # Создаем промпт
+    prompt = f"""Ты — образовательный ассистент, который помогает студентам разобраться в расписании и курсах.
 
-У тебя есть следующая информация:
+Твоя задача — ответить на вопрос студента, используя информацию из расписания и справочника курсов.
 
-=== РАСПИСАНИЕ ЗАНЯТИЙ ===
+ИНФОРМАЦИЯ О РАСПИСАНИИ:
 {schedule_description}
 
+РАСПИСАНИЕ:
 {schedule_text}
 
-=== СПРАВОЧНИК КУРСОВ ===
-{handbook_description}
-
-{handbook_text}
-
-=== ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ О РАСПИСАНИИ ===
+ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ О РАСПИСАНИИ:
 {schedule_faq}
 
-=== ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ О КУРСАХ ===
+ИНФОРМАЦИЯ О СПРАВОЧНИКЕ КУРСОВ:
+{handbook_description}
+
+СПРАВОЧНИК КУРСОВ:
+{handbook_text}
+
+ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ О КУРСАХ:
 {handbook_faq}
 
+{university_text}
+
 {conversation_text}
+Вопрос студента: {query}
 
-Используй эту информацию для ответа на вопрос пользователя. 
-В конце каждого ответа задавай уточняющий вопрос, чтобы продолжить диалог.
-Твои ответы должны быть дружелюбными, персонализированными и помогающими.
+Отвечай подробно, но по существу. Если информации недостаточно, скажи об этом. Если вопрос не связан с расписанием или курсами, вежливо объясни, что ты специализируешься на помощи с расписанием и курсами.
 """
-    
-    prompt = f"""Используй контекст для ответа на вопрос пользователя.
-
-Контекст:
-{context}
-
-Вопрос пользователя: {query}
-
-Дай развернутый, точный и дружелюбный ответ, основываясь на предоставленном контексте.
-Если вопрос касается расписания, используй данные из расписания.
-Если вопрос касается содержания курсов, системы оценивания или требований, используй данные из справочника курсов.
-В конце ответа обязательно добавь уточняющий вопрос, например "Интересует ли вас что-то еще по этой теме?" или предложи помощь с чем-то еще.
-Твои ответы должны быть человечными и персонализированными."""
     
     return prompt
 
@@ -326,6 +390,10 @@ def main():
     parser.add_argument("--handbook-faq", type=str, default="data/handbook_faq.txt", 
                       help="Путь к файлу с часто задаваемыми вопросами о курсах")
     
+    # Аргумент для нового файла с данными университета
+    parser.add_argument("--university-data", type=str, default="data/CentralUniversityData.csv", 
+                      help="Путь к CSV-файлу с дополнительными данными университета")
+    
     args = parser.parse_args()
     
     # Загрузка данных о расписании
@@ -337,6 +405,9 @@ def main():
     handbook_data = load_csv_data(args.handbook_csv)
     handbook_description = load_text_data(args.handbook_description)
     handbook_faq = load_text_data(args.handbook_faq)
+    
+    # Загрузка дополнительных данных университета
+    university_data = load_csv_data(args.university_data)
     
     if not schedule_data or not handbook_data:
         print("Ошибка: Не удалось загрузить необходимые данные")
@@ -368,6 +439,7 @@ def main():
             query, 
             schedule_data, schedule_description, schedule_faq,
             handbook_data, handbook_description, handbook_faq,
+            university_data,
             conversation_history
         )
         
