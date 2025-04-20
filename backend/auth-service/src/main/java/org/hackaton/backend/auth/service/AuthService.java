@@ -53,7 +53,6 @@ public class AuthService {
         String accessToken = jwtUtils.generateToken(user);
         return new AuthResponse(
                 accessToken,
-                null, // Можно добавить refresh токен
                 Instant.now().plus(jwtUtils.getExpiration())
         );
     }
