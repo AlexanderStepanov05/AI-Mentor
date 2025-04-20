@@ -25,13 +25,13 @@ export const MainPage = ({isAuthenticated}) => {
             formData.email = Data.email;
             formData.password = Data.password;
             axios
-                .post(``, formData) // рег
+                .post(`http://localhost:8082/api/auth/register`, formData)
                 .then(() => {
                     const body = {};
-                    body.username = Data.username;
+                    body.email = Data.email;
                     body.password = Data.password;
                     axios
-                        .post(``, body) // Логин
+                        .post(`http://localhost:8082/api/auth/login`, body)
                         .then(res => {
                             dispatch({
                                 type: LOGIN_SUCCESS,

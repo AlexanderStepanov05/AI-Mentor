@@ -21,10 +21,10 @@ export const Login = ({ isAuthenticated }) => {
         if (Data.username.trim() !== "" && Data.password.trim() !== "") {
             setInCorrectValue(false);
             const formData = {};
-            formData.username = Data.username;
-            formData.password = Data.password;
+            formData.email = Data.email;
+            formData.email = Data.email;
             axios
-                .post(`${domain}/login`, formData)
+                .post(`http://api-gateway:8082/api/auth/login`, formData)
                 .then(res => {
                     dispatch({
                         type: LOGIN_SUCCESS,
