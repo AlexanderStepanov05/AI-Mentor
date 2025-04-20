@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Базы данных
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-mentor-network
+
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ai-mentor-network
+
+  # Сервисы
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - ai-mentor-network
+
+  dialogue-service:
+    build:
+      context: ./backend/dialogue-service
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://admin:secret@mongo:27017/dialogue_db?authSource=admin
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    networks:
+      - ai-mentor-network
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CLOUD_GATEWAY_ROUTES_AUTH-SERVICE_URL=http://auth-service:8080
+      - SPRING_CLOUD_GATEWAY_ROUTES_DIALOGUE-SERVICE_URL=http://dialogue-service:8081
+      - SPRING_CLOUD_GATEWAY_ROUTES_ML-SERVICE_URL=http://ml-service:8083
+      - JWT_SECRET=your-256-bit-secret-key-here-must-be-secure
+      - JWT_EXPIRATION=3600
+    depends_on:
+      - auth-service
+      - dialogue-service
+    networks:
+      - ai-mentor-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - ai-mentor-network
+
+networks:
+  ai-mentor-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:
