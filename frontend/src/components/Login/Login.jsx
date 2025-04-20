@@ -18,13 +18,13 @@ export const Login = ({ isAuthenticated }) => {
 
     const onSubmit = e => {
         e.preventDefault();
-        if (Data.username.trim() !== "" && Data.password.trim() !== "") {
+        if (Data.email.trim() !== "" && Data.password.trim() !== "") {
             setInCorrectValue(false);
             const formData = {};
             formData.email = Data.email;
-            formData.email = Data.email;
+            formData.password = Data.password;
             axios
-                .post(`http://api-gateway:8082/api/auth/login`, formData)
+                .post(`http://localhost:8082/api/auth/login`, formData)
                 .then(res => {
                     dispatch({
                         type: LOGIN_SUCCESS,
@@ -39,9 +39,9 @@ export const Login = ({ isAuthenticated }) => {
         }
     };
 
-    // if (isAuthenticated) {
-    //     return <Navigate to="/main" />;
-    // }
+    if (isAuthenticated) {
+        return <Navigate to="/main" />;
+    }
 
     return (
         <BaseForm 
