@@ -64,9 +64,11 @@ export const MainPage = ({isAuthenticated}) => {
             setInCorrectValue(true);
         }
     };
+
     if (isAuthenticated) {
         return <Navigate to="/main" />;
     }
+
     return (
         <BaseForm
             onSubmit={onSubmit}

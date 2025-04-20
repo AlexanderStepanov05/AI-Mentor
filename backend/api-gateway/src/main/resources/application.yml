@@ -9,30 +9,42 @@ spring:
       routes:
         - id: auth-service
 <<<<<<< HEAD
+<<<<<<< HEAD
           uri: lb://auth-service
 =======
           uri: http://localhost:8080
 >>>>>>> frontend
+=======
+          uri: http://localhost:8080
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
           predicates:
             - Path=/api/auth/**
           filters:
             - StripPrefix=1
         - id: dialogue-service
 <<<<<<< HEAD
+<<<<<<< HEAD
           uri: lb://dialogue-service
 =======
           uri: http://localhost:8081
 >>>>>>> frontend
+=======
+          uri: http://localhost:8081
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
           predicates:
             - Path=/api/dialogues/**
           filters:
             - StripPrefix=1
         - id: ml-service
 <<<<<<< HEAD
+<<<<<<< HEAD
           uri: lb://ml-service
 =======
           uri: http://localhost:8083
 >>>>>>> frontend
+=======
+          uri: http://localhost:8083
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
           predicates:
             - Path=/api/ml/**
           filters:

@@ -4,12 +4,18 @@ import org.hackaton.backend.gateway.utils.JwtUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.springframework.http.HttpStatus;
 =======
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 >>>>>>> frontend
+=======
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -27,6 +33,7 @@ public class JwtAuthFilter implements GatewayFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         String token = extractToken(exchange.getRequest());
         if (token == null || !jwtUtils.validateToken(token)) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -40,6 +47,14 @@ public class JwtAuthFilter implements GatewayFilter {
         if (isPublicEndpoint(path)) {
             return chain.filter(exchange);
         }
+=======
+        ServerHttpRequest request = exchange.getRequest();
+        String path = request.getPath().toString();
+
+        if (isPublicEndpoint(path)) {
+            return chain.filter(exchange);
+        }
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
 
         String token = extractToken(request);
         if (token == null) {
@@ -62,16 +77,22 @@ public class JwtAuthFilter implements GatewayFilter {
         return path.startsWith("/api/auth/login")
                 || path.startsWith("/api/auth/register")
                 || path.startsWith("/actuator/health");
+<<<<<<< HEAD
 >>>>>>> frontend
+=======
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
     }
 
     private String extractToken(ServerHttpRequest request) {
         String header = request.getHeaders().getFirst("Authorization");
 <<<<<<< HEAD
+<<<<<<< HEAD
         return header.startsWith("Bearer ")
                 ? header.substring(7)
                 : null;
 =======
+=======
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
         if (header.startsWith("Bearer ")) {
             return header.substring(7);
         }
@@ -84,6 +105,9 @@ public class JwtAuthFilter implements GatewayFilter {
         String body = String.format("{\"error\": \"%s\"}", message);
         DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(body.getBytes());
         return exchange.getResponse().writeWith(Mono.just(buffer));
+<<<<<<< HEAD
 >>>>>>> frontend
+=======
+>>>>>>> a3869b092b31b7e8dc8ffb2474589b1d101be40d
     }
 }
